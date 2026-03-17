@@ -10,7 +10,7 @@ namespace ServidorAlerta.Controller
 {
 
     [ApiController]
-    [Route("api/[controller]")]
+    [Route("alerta")]
     public class AlertaController : ControllerBase
     {
         
@@ -21,10 +21,10 @@ namespace ServidorAlerta.Controller
             _hub = hub;
         }
 
-        [HttpPost]
-        public async Task<IActionResult> EnviarMensagem(string mesagem)
+        [HttpPost("enviar")]
+        public async Task<IActionResult> EnviarMensagem(string mensagem)
         {
-            await _hub.Clients.All.SendAsync("ReceberMensagem", mesagem);
+            await _hub.Clients.All.SendAsync("ReceberMensagem", mensagem);
             return Ok();
         }
 

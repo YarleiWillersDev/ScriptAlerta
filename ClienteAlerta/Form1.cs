@@ -13,7 +13,7 @@ public partial class Form1 : Form
     public Form1()
     {
         InitializeComponent();
-        RegistrarInicializacaoWindows();
+        //RegistrarInicializacaoWindows();
         ConectarServidor();
     }
 
@@ -92,21 +92,6 @@ public partial class Form1 : Form
 
                     lblMensagem.Text = mensagem;
                     timerPiscar.Start();
-
-                    // mostra popup
-                    var resultado = MessageBox.Show(
-                        mensagem,
-                        "ALERTA DO SISTEMA",
-                        MessageBoxButtons.OK,
-                        MessageBoxIcon.Warning
-                    );
-
-                    // quando clicar OK
-                    if (resultado == DialogResult.OK)
-                    {
-                        timerPiscar.Stop();
-                        this.Hide();
-                    }
                 });
             });
 
@@ -127,13 +112,13 @@ public partial class Form1 : Form
 
     // Fazer o executável rodar em segundo plano
 
-    private void RegistrarInicializacaoWindows()
+/*    private void RegistrarInicializacaoWindows()
     {
         string caminhoApp = Application.ExecutablePath;
 
         RegistryKey chave = Registry.CurrentUser.OpenSubKey(
             @"SOFTAWRE\Microsoft\Windows\CurrentVersion\Run", true);
 
-        chave.SetValue("ClienteAlerta", caminhoApp);
-    }
+        chave.SetValue("ClienteAlerta", caminhoApp); 
+    } */
 }

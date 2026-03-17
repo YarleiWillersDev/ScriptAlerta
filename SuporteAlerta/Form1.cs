@@ -45,21 +45,21 @@ public partial class Form1 : Form
         this.Controls.Add(lblStatus);
     }
 
-    public async void botao_Enviar_Click(object sender, EventArgs e)
+    public async void botao_Enviar_Click(object? sender, EventArgs e)
     {
         string mensagem = txtMensagem.Text.Trim();
+
         if (string.IsNullOrEmpty(mensagem))
         {
-            MessageBox.Show("Mensagem vazia não pode ser vazia!");
+            MessageBox.Show("Mensagem não pode ser vazia!");
             return;
         }
 
         try
         {
-            var response = await client.PostAsync(
-                $"http://localhost:5000/Alerta?mensagem={mensagem}",
-                null
-            );
+            string url = $"http://localhost:5000/alerta/enviar?mensagem={Uri.EscapeDataString(mensagem)}";
+
+            var response = await client.PostAsync(url, null);
 
             if (response.IsSuccessStatusCode)
             {
@@ -68,12 +68,12 @@ public partial class Form1 : Form
             }
             else
             {
-                lblStatus.Text = "erro ao enviar mensagem.";
+                lblStatus.Text = $"Erro HTTP: {response.StatusCode}";
             }
         }
         catch (Exception ex)
         {
-            lblStatus.Text = "Erro " + ex.Message;
+            lblStatus.Text = "Erro: " + ex.Message;
         }
     }
 }
