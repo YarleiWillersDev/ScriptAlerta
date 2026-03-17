@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.SignalR.Client;
+using Microsoft.Win32;
 
 namespace ClienteAlerta;
 
@@ -6,15 +7,17 @@ public partial class Form1 : Form
 {
     private HubConnection connection = null!;
     private Label lblMensagem = null!;
-
     private System.Windows.Forms.Timer timerPiscar = null!;
+    private NotifyIcon notifyIcon = null!;
 
     public Form1()
     {
         InitializeComponent();
+        RegistrarInicializacaoWindows();
         ConectarServidor();
     }
 
+    // Configuração do formulário que aparecerá na tela da loja
     private void InitializeComponent()
     {
         {
@@ -35,6 +38,11 @@ public partial class Form1 : Form
             // Cor de fundo para destaque
             this.BackColor = Color.DarkRed;
 
+            // Esconder a janela ao iniciar
+            this.WindowState = FormWindowState.Minimized;
+            this.ShowInTaskbar = false;
+            this.Hide();
+
             // Label da mensagem
             lblMensagem = new Label();
             lblMensagem.Dock = DockStyle.Fill;
@@ -49,14 +57,22 @@ public partial class Form1 : Form
             timerPiscar = new System.Windows.Forms.Timer();
             timerPiscar.Interval = 500;
             timerPiscar.Tick += TimerPiscar_Tick;
+
+            // Ícone de bandeja
+            notifyIcon = new NotifyIcon();
+            notifyIcon.Icon = SystemIcons.Warning;
+            notifyIcon.Visible = true;
+            notifyIcon.Text = "Cliente Alerta";
         }
     }
-    
+
+    // Ação que faz a mensagem de POP-UP piscar
     private void TimerPiscar_Tick(object? sender, EventArgs e)
     {
         lblMensagem.Visible = !lblMensagem.Visible;
     }
 
+    // Efetua a conexão com o servidor
     private async void ConectarServidor()
     {
         try
@@ -70,14 +86,27 @@ public partial class Form1 : Form
             {
                 this.Invoke(() =>
                 {
-                    lblMensagem.Text = mensagem;
+                    // mostra a janela
+                    this.Show();
+                    this.WindowState = FormWindowState.Normal;
 
-                    MessageBox.Show(
+                    lblMensagem.Text = mensagem;
+                    timerPiscar.Start();
+
+                    // mostra popup
+                    var resultado = MessageBox.Show(
                         mensagem,
                         "ALERTA DO SISTEMA",
                         MessageBoxButtons.OK,
                         MessageBoxIcon.Warning
                     );
+
+                    // quando clicar OK
+                    if (resultado == DialogResult.OK)
+                    {
+                        timerPiscar.Stop();
+                        this.Hide();
+                    }
                 });
             });
 
@@ -94,5 +123,17 @@ public partial class Form1 : Form
                 MessageBoxIcon.Error
             );
         }
+    }
+
+    // Fazer o executável rodar em segundo plano
+
+    private void RegistrarInicializacaoWindows()
+    {
+        string caminhoApp = Application.ExecutablePath;
+
+        RegistryKey chave = Registry.CurrentUser.OpenSubKey(
+            @"SOFTAWRE\Microsoft\Windows\CurrentVersion\Run", true);
+
+        chave.SetValue("ClienteAlerta", caminhoApp);
     }
 }

@@ -1,3 +1,4 @@
+using System.Reflection.Metadata.Ecma335;
 using System.Xml.Serialization;
 
 namespace SuporteAlerta;
@@ -53,7 +54,26 @@ public partial class Form1 : Form
             return;
         }
 
-        lblStatus.Text = "Mensagem enviada (simulada).";
-        txtMensagem.Clear();
+        try
+        {
+            var response = await client.PostAsync(
+                $"http://localhost:5000/Alerta?mensagem={mensagem}",
+                null
+            );
+
+            if (response.IsSuccessStatusCode)
+            {
+                lblStatus.Text = "Mensagem enviada para as lojas!";
+                txtMensagem.Clear();
+            }
+            else
+            {
+                lblStatus.Text = "erro ao enviar mensagem.";
+            }
+        }
+        catch (Exception ex)
+        {
+            lblStatus.Text = "Erro " + ex.Message;
+        }
     }
 }
