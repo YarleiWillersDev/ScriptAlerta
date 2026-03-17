@@ -1,0 +1,98 @@
+using Microsoft.AspNetCore.SignalR.Client;
+
+namespace ClienteAlerta;
+
+public partial class Form1 : Form
+{
+    private HubConnection connection = null!;
+    private Label lblMensagem = null!;
+
+    private System.Windows.Forms.Timer timerPiscar = null!;
+
+    public Form1()
+    {
+        InitializeComponent();
+        ConectarServidor();
+    }
+
+    private void InitializeComponent()
+    {
+        {
+            // Configuração do formulário
+            this.Text = "Cliente Alerta";
+            this.Size = new Size(1200, 600);
+            this.StartPosition = FormStartPosition.CenterScreen;
+
+            // Travar redimensionamento
+            this.FormBorderStyle = FormBorderStyle.FixedSingle;
+            this.MaximizeBox = false;
+            this.MinimizeBox = false;
+
+            // Tamanho fixo garantido
+            this.MinimumSize = new Size(1200, 600);
+            this.MaximumSize = new Size(1200, 600);
+
+            // Cor de fundo para destaque
+            this.BackColor = Color.DarkRed;
+
+            // Label da mensagem
+            lblMensagem = new Label();
+            lblMensagem.Dock = DockStyle.Fill;
+            lblMensagem.Font = new Font("Segoe UI", 48, FontStyle.Bold);
+            lblMensagem.ForeColor = Color.White;
+            lblMensagem.TextAlign = ContentAlignment.MiddleCenter;
+            lblMensagem.Text = "AGUARDANDO ALERTAS...";
+
+            this.Controls.Add(lblMensagem);
+
+            // Timer para efeito piscando
+            timerPiscar = new System.Windows.Forms.Timer();
+            timerPiscar.Interval = 500;
+            timerPiscar.Tick += TimerPiscar_Tick;
+        }
+    }
+    
+    private void TimerPiscar_Tick(object? sender, EventArgs e)
+    {
+        lblMensagem.Visible = !lblMensagem.Visible;
+    }
+
+    private async void ConectarServidor()
+    {
+        try
+        {
+            connection = new HubConnectionBuilder()
+                .WithUrl("http://localhost:5000/alertaHub")
+                .WithAutomaticReconnect()
+                .Build();
+
+            connection.On<string>("ReceberMensagem", mensagem =>
+            {
+                this.Invoke(() =>
+                {
+                    lblMensagem.Text = mensagem;
+
+                    MessageBox.Show(
+                        mensagem,
+                        "ALERTA DO SISTEMA",
+                        MessageBoxButtons.OK,
+                        MessageBoxIcon.Warning
+                    );
+                });
+            });
+
+            await connection.StartAsync();
+
+            lblMensagem.Text = "Conectado ao servidor de alertas.";
+        }
+        catch (Exception ex)
+        {
+            MessageBox.Show(
+                "Erro ao conectar ao servidor:\n" + ex.Message,
+                "Erro",
+                MessageBoxButtons.OK,
+                MessageBoxIcon.Error
+            );
+        }
+    }
+}
